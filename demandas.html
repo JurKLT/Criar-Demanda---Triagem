@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Central de Demandas</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Instrument+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#f5f2ed;
+  --ink:#111318;
+  --ink2:#4a4d58;
+  --ink3:#9a9daa;
+  --surface:#ffffff;
+  --border:#e2ddd6;
+  --accent:#1a3a5c;
+  --accent2:#2557a7;
+  --gold:#c07d2f;
+  --gold-bg:#fdf6ec;
+  --green:#1a7a52;
+  --green-bg:#edf7f3;
+  --red:#b83232;
+  --red-bg:#fdf0f0;
+  --yellow:#c49a00;
+  --yellow-bg:#fefae8;
+  --radius:16px;
+  --shadow:0 2px 16px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.05);
+  --shadow-lg:0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+}
+
+html,body{min-height:100%;background:var(--bg);color:var(--ink);font-family:'Instrument Sans',sans-serif;font-weight:400}
+
+body{display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 4rem;overflow-x:hidden}
+
+/* ── FLOW HEADER ── */
+.flow-header{width:100%;max-width:560px;margin-bottom:2.5rem;animation:fadeDown .5s ease both}
+
+.org-tag{display:inline-flex;align-items:center;gap:.5rem;font-family:'Syne',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent2);background:#eef3fb;border:1px solid #c5d5ef;border-radius:100px;padding:.3rem .9rem;margin-bottom:1.1rem}
+.org-tag::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent2);animation:blink 2s infinite}
+
+h1{font-family:'Syne',sans-serif;font-size:clamp(1.5rem,4vw,2rem);font-weight:800;line-height:1.15;color:var(--ink);margin-bottom:.5rem}
+.sub{font-size:.875rem;color:var(--ink2);line-height:1.6}
+
+/* ── FLUXO VISUAL ── */
+.flow-diagram{width:100%;max-width:560px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem 1.6rem;margin-bottom:2rem;box-shadow:var(--shadow);animation:fadeDown .5s .1s ease both}
+
+.flow-title{font-family:'Syne',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:1rem}
+
+.flow-steps{display:flex;align-items:center;gap:0;flex-wrap:nowrap;overflow-x:auto;padding-bottom:.3rem}
+.flow-steps::-webkit-scrollbar{height:3px}
+.flow-steps::-webkit-scrollbar-thumb{background:var(--border);border-radius:99px}
+
+.fstep{display:flex;flex-direction:column;align-items:center;gap:.4rem;flex-shrink:0;min-width:80px}
+.fstep-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700}
+.fstep-label{font-size:.68rem;font-weight:500;color:var(--ink2);text-align:center;line-height:1.3;max-width:80px}
+.fstep-sub{font-size:.6rem;color:var(--ink3);text-align:center}
+
+.fstep.active .fstep-icon{background:var(--accent);color:#fff}
+.fstep.mid .fstep-icon{background:var(--gold-bg);color:var(--gold);border:2px solid #f0d9b5}
+.fstep.end .fstep-icon{background:var(--green-bg);color:var(--green);border:2px solid #b8e0cf}
+
+.farrow{flex-shrink:0;color:var(--ink3);font-size:.8rem;margin:0 .3rem;padding-bottom:1.4rem}
+
+/* ── STEPS CONTAINER ── */
+.steps-wrap{width:100%;max-width:560px}
+
+.step{display:none;animation:fadeUp .35s ease both}
+.step.active{display:block}
+
+/* STEP LABEL */
+.step-label{display:flex;align-items:center;gap:.6rem;margin-bottom:1.2rem}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-name{font-family:'Syne',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2)}
+
+/* CARDS GRID */
+.cards-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:1rem}
+
+.opt-card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);padding:1.1rem 1rem;cursor:pointer;transition:all .2s cubic-bezier(.4,0,.2,1);text-align:left;position:relative;overflow:hidden}
+.opt-card::after{content:'';position:absolute;inset:0;background:var(--accent);opacity:0;transition:opacity .2s}
+.opt-card:hover{border-color:var(--accent2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.opt-card.selected{border-color:var(--accent);background:#f0f4fb}
+.opt-card .oc-icon{font-size:1.5rem;margin-bottom:.5rem;display:block}
+.opt-card .oc-title{font-family:'Syne',sans-serif;font-size:.82rem;font-weight:700;color:var(--ink);margin-bottom:.2rem}
+.opt-card .oc-desc{font-size:.7rem;color:var(--ink3);line-height:1.4}
+.opt-card .oc-check{position:absolute;top:.7rem;right:.7rem;width:20px;height:20px;border-radius:50%;background:var(--accent);display:none;align-items:center;justify-content:center}
+.opt-card .oc-check::after{content:'✓';color:#fff;font-size:.7rem;font-weight:700}
+.opt-card.selected .oc-check{display:flex}
+
+/* URGENCY */
+.urg-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1rem}
+.urg-btn{border:2px solid var(--border);border-radius:12px;padding:.9rem .6rem;cursor:pointer;text-align:center;background:var(--surface);transition:all .2s;font-family:'Instrument Sans',sans-serif}
+.urg-btn:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.urg-btn .ub-icon{font-size:1.3rem;display:block;margin-bottom:.3rem}
+.urg-btn .ub-label{font-family:'Syne',sans-serif;font-size:.72rem;font-weight:700}
+.urg-btn .ub-sub{font-size:.63rem;color:var(--ink3);margin-top:.1rem}
+.urg-btn.selected{border-width:2px}
+
+.urg-btn.u-normal.selected{border-color:var(--green);background:var(--green-bg);color:var(--green)}
+.urg-btn.u-atencao.selected{border-color:var(--yellow);background:var(--yellow-bg);color:var(--yellow)}
+.urg-btn.u-urgente.selected{border-color:var(--red);background:var(--red-bg);color:var(--red)}
+
+/* TEXTAREA */
+.field-label{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-bottom:.5rem;display:block}
+textarea{width:100%;border:2px solid var(--border);border-radius:12px;padding:.9rem 1rem;font-family:'Instrument Sans',sans-serif;font-size:.875rem;color:var(--ink);background:var(--surface);resize:none;outline:none;transition:border-color .2s;margin-bottom:1rem}
+textarea:focus{border-color:var(--accent2)}
+textarea::placeholder{color:var(--ink3)}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:.6rem;margin-top:.3rem}
+.btn{flex:1;padding:.85rem 1rem;border-radius:10px;font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.04em;cursor:pointer;border:none;transition:all .2s;text-align:center}
+.btn-back{background:transparent;border:2px solid var(--border);color:var(--ink2)}
+.btn-back:hover{border-color:var(--ink2)}
+.btn-next{background:var(--accent);color:#fff;box-shadow:0 4px 16px rgba(26,58,92,.25)}
+.btn-next:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 6px 20px rgba(26,58,92,.3)}
+.btn-next:disabled{opacity:.4;pointer-events:none}
+
+/* ── PROTOCOLO / CONFIRMAÇÃO ── */
+.confirm-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1.8rem 1.6rem;box-shadow:var(--shadow-lg);margin-bottom:1rem}
+
+.proto-badge{background:var(--accent);color:#fff;border-radius:10px;padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;gap:1rem}
+.proto-label{font-family:'Syne',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;opacity:.7}
+.proto-num{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;letter-spacing:.05em}
+.proto-copy{background:rgba(255,255,255,.15);border:none;border-radius:7px;padding:.4rem .7rem;color:#fff;font-size:.7rem;font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;transition:background .2s;white-space:nowrap}
+.proto-copy:hover{background:rgba(255,255,255,.25)}
+
+.summary{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.4rem}
+.sum-row{display:flex;align-items:flex-start;gap:.8rem;padding:.65rem .9rem;background:var(--bg);border-radius:10px}
+.sum-icon{font-size:1rem;flex-shrink:0;margin-top:.05rem}
+.sum-key{font-size:.68rem;font-weight:500;color:var(--ink3);margin-bottom:.15rem;font-family:'Syne',sans-serif;letter-spacing:.05em;text-transform:uppercase}
+.sum-val{font-size:.82rem;font-weight:500;color:var(--ink)}
+
+.flow-path{display:flex;align-items:center;gap:.4rem;padding:.8rem 1rem;background:var(--gold-bg);border:1px solid #f0d9b5;border-radius:10px;margin-bottom:1.4rem;flex-wrap:wrap}
+.fp-node{font-size:.72rem;font-weight:500;color:var(--gold);padding:.2rem .5rem;background:#fff;border:1px solid #f0d9b5;border-radius:6px;white-space:nowrap}
+.fp-arr{color:#d4aa6a;font-size:.7rem}
+
+.send-title{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:.8rem}
+
+.send-btns{display:flex;gap:.7rem}
+.sbtn{flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.9rem .8rem;border-radius:12px;font-family:'Syne',sans-serif;font-size:.78rem;font-weight:700;border:none;cursor:pointer;transition:all .2s;text-decoration:none}
+.sbtn-wa{background:#25d366;color:#fff}
+.sbtn-wa:hover{background:#1db954;transform:translateY(-1px);box-shadow:0 4px 16px rgba(37,211,102,.3)}
+.sbtn-em{background:var(--accent);color:#fff}
+.sbtn-em:hover{background:var(--accent2);transform:translateY(-1px);box-shadow:0 4px 16px rgba(26,58,92,.3)}
+.sbtn svg{width:16px;height:16px;fill:currentColor;flex-shrink:0}
+
+.reset-link{display:block;text-align:center;margin-top:1.2rem;font-size:.78rem;color:var(--ink3);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.reset-link:hover{color:var(--ink)}
+
+/* ── MISC ── */
+.urg-indicator{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .8rem;border-radius:100px;font-size:.7rem;font-weight:600}
+.ui-normal{background:var(--green-bg);color:var(--green)}
+.ui-atencao{background:var(--yellow-bg);color:var(--yellow)}
+.ui-urgente{background:var(--red-bg);color:var(--red)}
+
+@keyframes fadeDown{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Progress bar */
+.progress-wrap{width:100%;max-width:560px;margin-bottom:1.8rem;animation:fadeDown .5s .05s ease both}
+.progress-track{height:4px;background:var(--border);border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:99px;transition:width .4s cubic-bezier(.4,0,.2,1)}
+.progress-labels{display:flex;justify-content:space-between;margin-top:.5rem}
+.pl{font-size:.62rem;font-weight:500;color:var(--ink3);transition:color .3s}
+.pl.done{color:var(--accent2)}
+
+@media(max-width:400px){
+  .cards-grid{grid-template-columns:1fr}
+  .urg-grid{grid-template-columns:1fr 1fr}
+  .send-btns{flex-direction:column}
+}
+</style>
+</head>
+<body>
+
+<div class="flow-header">
+  <div class="org-tag">Governança Corporativa</div>
+  <h1>Central de<br/>Demandas</h1>
+  <p class="sub">Preencha os campos abaixo. Sua demanda será encaminhada à Gerência de Governança para triagem e direcionamento correto.</p>
+</div>
+
+<!-- Fluxo visual -->
+<div class="flow-diagram">
+  <div class="flow-title">Fluxo de encaminhamento</div>
+  <div class="flow-steps">
+    <div class="fstep active">
+      <div class="fstep-icon">👤</div>
+      <div class="fstep-label">Presidente</div>
+      <div class="fstep-sub">Você está aqui</div>
+    </div>
+    <div class="farrow">→</div>
+    <div class="fstep mid">
+      <div class="fstep-icon">📋</div>
+      <div class="fstep-label">Formulário</div>
+      <div class="fstep-sub">Tipo + urgência</div>
+    </div>
+    <div class="farrow">→</div>
+    <div class="fstep mid">
+      <div class="fstep-icon">🏛</div>
+      <div class="fstep-label">Governança</div>
+      <div class="fstep-sub">Triagem</div>
+    </div>
+    <div class="farrow">→</div>
+    <div class="fstep end">
+      <div class="fstep-icon">✅</div>
+      <div class="fstep-label">Área correta</div>
+      <div class="fstep-sub">Execução</div>
+    </div>
+  </div>
+</div>
+
+<!-- Progress -->
+<div class="progress-wrap">
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill" style="width:33%"></div>
+  </div>
+  <div class="progress-labels">
+    <span class="pl done" id="pl1">Tipo</span>
+    <span class="pl" id="pl2">Urgência</span>
+    <span class="pl" id="pl3">Descrição</span>
+    <span class="pl" id="pl4">Enviar</span>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     STEP 1 — TIPO
+────────────────────────────────────── -->
+<div class="steps-wrap">
+<div class="step active" id="step1">
+  <div class="step-label">
+    <div class="step-num">1</div>
+    <div class="step-name">Qual o tipo da demanda?</div>
+  </div>
+  <div class="cards-grid">
+    <div class="opt-card" onclick="selectTipo(this,'Revisão de Documentos','📄')">
+      <div class="oc-check"></div>
+      <span class="oc-icon">📄</span>
+      <div class="oc-title">Revisão de Documentos</div>
+      <div class="oc-desc">Contratos, atas, políticas e normativos</div>
+    </div>
+    <div class="opt-card" onclick="selectTipo(this,'Pagamentos','💳')">
+      <div class="oc-check"></div>
+      <span class="oc-icon">💳</span>
+      <div class="oc-title">Pagamentos</div>
+      <div class="oc-desc">Aprovações financeiras e transferências</div>
+    </div>
+    <div class="opt-card" onclick="selectTipo(this,'Novo Negócio','🚀')">
+      <div class="oc-check"></div>
+      <span class="oc-icon">🚀</span>
+      <div class="oc-title">Novo Negócio</div>
+      <div class="oc-desc">Parcerias, projetos e expansões</div>
+    </div>
+    <div class="opt-card" onclick="selectTipo(this,'Outros','📌')">
+      <div class="oc-check"></div>
+      <span class="oc-icon">📌</span>
+      <div class="oc-title">Outros</div>
+      <div class="oc-desc">Demandas não categorizadas acima</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-next" id="btn1" disabled onclick="goStep(2)">Continuar →</button>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     STEP 2 — URGÊNCIA
+────────────────────────────────────── -->
+<div class="step" id="step2">
+  <div class="step-label">
+    <div class="step-num">2</div>
+    <div class="step-name">Qual o nível de urgência?</div>
+  </div>
+  <div class="urg-grid">
+    <div class="urg-btn u-normal" onclick="selectUrg(this,'Normal','🟢','Até 5 dias úteis','ui-normal')">
+      <span class="ub-icon">🟢</span>
+      <div class="ub-label">Normal</div>
+      <div class="ub-sub">Até 5 dias úteis</div>
+    </div>
+    <div class="urg-btn u-atencao" onclick="selectUrg(this,'Atenção','🟡','Até 2 dias úteis','ui-atencao')">
+      <span class="ub-icon">🟡</span>
+      <div class="ub-label">Atenção</div>
+      <div class="ub-sub">Até 2 dias úteis</div>
+    </div>
+    <div class="urg-btn u-urgente" onclick="selectUrg(this,'Urgente','🔴','Hoje / amanhã','ui-urgente')">
+      <span class="ub-icon">🔴</span>
+      <div class="ub-label">Urgente</div>
+      <div class="ub-sub">Hoje / amanhã</div>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="goStep(1)">← Voltar</button>
+    <button class="btn btn-next" id="btn2" disabled onclick="goStep(3)">Continuar →</button>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     STEP 3 — DESCRIÇÃO
+────────────────────────────────────── -->
+<div class="step" id="step3">
+  <div class="step-label">
+    <div class="step-num">3</div>
+    <div class="step-name">Descreva brevemente a demanda</div>
+  </div>
+  <label class="field-label">O que precisa ser feito?</label>
+  <textarea id="descricao" rows="4" placeholder="Ex: Precisamos revisar o contrato com o fornecedor XYZ antes da reunião de quinta-feira..." oninput="checkDesc()"></textarea>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="goStep(2)">← Voltar</button>
+    <button class="btn btn-next" id="btn3" disabled onclick="goConfirm()">Gerar protocolo →</button>
+  </div>
+</div>
+
+<!-- ──────────────────────────────────────
+     STEP 4 — CONFIRMAÇÃO
+────────────────────────────────────── -->
+<div class="step" id="step4">
+  <div class="step-label">
+    <div class="step-num">4</div>
+    <div class="step-name">Protocolo gerado — envie agora</div>
+  </div>
+
+  <div class="confirm-box">
+    <div class="proto-badge">
+      <div>
+        <div class="proto-label">Número do Protocolo</div>
+        <div class="proto-num" id="proto-display">—</div>
+      </div>
+      <button class="proto-copy" onclick="copyProto()">📋 Copiar</button>
+    </div>
+
+    <div class="summary">
+      <div class="sum-row">
+        <span class="sum-icon">📁</span>
+        <div>
+          <div class="sum-key">Tipo</div>
+          <div class="sum-val" id="sum-tipo">—</div>
+        </div>
+      </div>
+      <div class="sum-row">
+        <span class="sum-icon" id="sum-urg-icon">⚡</span>
+        <div>
+          <div class="sum-key">Urgência</div>
+          <div class="sum-val"><span class="urg-indicator" id="sum-urg">—</span></div>
+        </div>
+      </div>
+      <div class="sum-row">
+        <span class="sum-icon">📝</span>
+        <div>
+          <div class="sum-key">Descrição</div>
+          <div class="sum-val" id="sum-desc">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-path">
+      <span class="fp-node">👤 Você</span>
+      <span class="fp-arr">→</span>
+      <span class="fp-node">🏛 Governança</span>
+      <span class="fp-arr">→</span>
+      <span class="fp-node">✅ Área correta</span>
+    </div>
+
+    <div class="send-title">Encaminhar para Governança via:</div>
+    <div class="send-btns">
+      <a class="sbtn sbtn-wa" id="wa-link" href="#" target="_blank" onclick="markSent()">
+        <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.558 4.116 1.532 5.845L.057 23.486a.5.5 0 0 0 .608.61l5.78-1.512A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.655-.493-5.19-1.357l-.371-.214-3.841 1.005 1.024-3.727-.228-.374A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+        WhatsApp
+      </a>
+      <a class="sbtn sbtn-em" id="email-link" href="#" onclick="markSent()">
+        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        E-mail
+      </a>
+    </div>
+  </div>
+
+  <a class="reset-link" onclick="resetAll()">↺ Abrir nova demanda</a>
+</div>
+
+</div><!-- end steps-wrap -->
+
+<script>
+// ── CONFIG — EDITE AQUI ──────────────────────────────
+const WHATSAPP_NUMBER = '5547997163071'; // número da gerente (DDI+DDD+número, sem + ou espaço)
+const EMAIL_DESTINO   = 'andreia.schneider@kltgroup.com.br';
+// ────────────────────────────────────────────────────
+
+let state = {tipo:'', tipoIcon:'', urgencia:'', urgClass:'', urgIcon:'', desc:''};
+
+function gerarProtocolo(){
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const yy = String(now.getFullYear()).slice(2);
+  const mm = pad(now.getMonth()+1);
+  const dd = pad(now.getDate());
+  const rnd = Math.floor(Math.random()*9000)+1000;
+  return `GOV-${yy}${mm}${dd}-${rnd}`;
+}
+
+function selectTipo(el, nome, icon){
+  document.querySelectorAll('.opt-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.tipo = nome;
+  state.tipoIcon = icon;
+  document.getElementById('btn1').disabled = false;
+}
+
+function selectUrg(el, nome, icon, sub, cls){
+  document.querySelectorAll('.urg-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  state.urgencia = nome;
+  state.urgIcon = icon;
+  state.urgClass = cls;
+  document.getElementById('btn2').disabled = false;
+}
+
+function checkDesc(){
+  const v = document.getElementById('descricao').value.trim();
+  state.desc = v;
+  document.getElementById('btn3').disabled = v.length < 10;
+}
+
+function goStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step'+n).classList.add('active');
+  updateProgress(n);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function updateProgress(step){
+  const pcts = {1:25,2:50,3:75,4:100};
+  document.getElementById('progress-fill').style.width = pcts[step]+'%';
+  ['pl1','pl2','pl3','pl4'].forEach((id,i)=>{
+    document.getElementById(id).classList.toggle('done', i < step);
+  });
+}
+
+function goConfirm(){
+  const proto = gerarProtocolo();
+  state.proto = proto;
+
+  document.getElementById('proto-display').textContent = proto;
+  document.getElementById('sum-tipo').textContent = state.tipoIcon+' '+state.tipo;
+  document.getElementById('sum-urg-icon').textContent = state.urgIcon;
+  document.getElementById('sum-desc').textContent = state.desc;
+
+  const urgEl = document.getElementById('sum-urg');
+  urgEl.className = 'urg-indicator '+state.urgClass;
+  urgEl.textContent = state.urgIcon+' '+state.urgencia;
+
+  // Monta mensagem
+  const msg =
+`🏛 *DEMANDA GOVERNANÇA*
+━━━━━━━━━━━━━━━━━━
+📌 *Protocolo:* ${proto}
+📁 *Tipo:* ${state.tipo}
+${state.urgIcon} *Urgência:* ${state.urgencia}
+📝 *Descrição:*
+${state.desc}
+━━━━━━━━━━━━━━━━━━
+_Enviado via Central de Demandas_`;
+
+  const assunto = `[${proto}] ${state.tipo} — ${state.urgencia}`;
+  const corpo =
+`Protocolo: ${proto}
+Tipo: ${state.tipo}
+Urgência: ${state.urgencia}
+
+Descrição:
+${state.desc}
+
+---
+Enviado via Central de Demandas`;
+
+  document.getElementById('wa-link').href =
+    `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  document.getElementById('email-link').href =
+    `mailto:${EMAIL_DESTINO}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+
+  goStep(4);
+}
+
+function copyProto(){
+  navigator.clipboard.writeText(state.proto||'').then(()=>{
+    const btn = document.querySelector('.proto-copy');
+    btn.textContent = '✅ Copiado!';
+    setTimeout(()=>btn.textContent='📋 Copiar',2000);
+  });
+}
+
+function markSent(){}
+
+function resetAll(){
+  state = {tipo:'',tipoIcon:'',urgencia:'',urgClass:'',urgIcon:'',desc:''};
+  document.querySelectorAll('.opt-card').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.urg-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('descricao').value='';
+  document.getElementById('btn1').disabled=true;
+  document.getElementById('btn2').disabled=true;
+  document.getElementById('btn3').disabled=true;
+  goStep(1);
+}
+</script>
+</body>
+</html>
