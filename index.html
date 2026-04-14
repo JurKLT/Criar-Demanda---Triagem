@@ -178,7 +178,7 @@ textarea::placeholder{color:var(--ink3)}
 <div class="flow-header">
   <div class="org-tag">Governança Corporativa</div>
   <h1>Central de<br/>Demandas</h1>
-  <p class="sub">Preencha os campos abaixo. Sua demanda será encaminhada à Gerência de Governança para triagem e direcionamento correto.</p>
+  <p class="sub">Preencha os campos abaixo. Sua demanda será encaminhada à Gerência de Governança para triagem e direcionamento aos setores competentes (financeiro, contábil, jurídico, entre outros), que entrarão em contato, se necessário.</p>
 </div>
 
 <!-- Fluxo visual -->
@@ -187,7 +187,7 @@ textarea::placeholder{color:var(--ink3)}
   <div class="flow-steps">
     <div class="fstep active">
       <div class="fstep-icon">👤</div>
-      <div class="fstep-label">Presidente</div>
+      <div class="fstep-label">Direção/Solicitante</div>
       <div class="fstep-sub">Você está aqui</div>
     </div>
     <div class="farrow">→</div>
@@ -301,10 +301,13 @@ textarea::placeholder{color:var(--ink3)}
 <div class="step" id="step3">
   <div class="step-label">
     <div class="step-num">3</div>
-    <div class="step-name">Descreva brevemente a demanda</div>
+    <div class="step-name">Qual é o tema da demanda?</div>
   </div>
-  <label class="field-label">O que precisa ser feito?</label>
-  <textarea id="descricao" rows="4" placeholder="Ex: Precisamos revisar o contrato com o fornecedor XYZ antes da reunião de quinta-feira..." oninput="checkDesc()"></textarea>
+  <div style="background:#fdf0f0;border:1px solid #f5c0c0;border-radius:12px;padding:.9rem 1rem;margin-bottom:1rem;font-size:.8rem;line-height:1.6;color:#7a2020">
+    🔒 <strong>NÃO INSERIR</strong> senhas, valores, dados pessoais ou informações confidenciais. Este campo destina-se exclusivamente à indicação do tema da demanda, por meio de palavra-chave genérica de referência (ex.: "contrato fornecedor X", "projeto Y", "aditivo locação"). <strong>Os detalhes serão coletados posteriormente pela Governança, para adequada triagem e direcionamento interno.</strong>
+  </div>
+  <label class="field-label">Tema da demanda</label>
+  <textarea id="descricao" rows="3" placeholder="Ex: Revisão de contrato com fornecedor / Aprovação de pagamento mensal / Nova parceria comercial..." oninput="checkDesc()"></textarea>
   <div class="btn-row">
     <button class="btn btn-back" onclick="goStep(2)">← Voltar</button>
     <button class="btn btn-next" id="btn3" disabled onclick="goConfirm()">Gerar protocolo →</button>
@@ -361,16 +364,16 @@ textarea::placeholder{color:var(--ink3)}
       <span class="fp-node">✅ Área correta</span>
     </div>
 
-    <div class="send-title">Encaminhar para Governança via:</div>
+
+    <div style="background:#fefae8;border:1px solid #e8d48a;border-radius:10px;padding:.8rem 1rem;margin-bottom:1rem;font-size:.8rem;line-height:1.6;color:#7a5f00">
+      ⚠️ <strong>Envio obrigatório.</strong> O protocolo acima é apenas uma referência local. <strong>A Governança só será notificada após o envio pelo WhatsApp abaixo.</strong> Sem o envio, a demanda não será registrada.
+    </div>
     <div class="send-btns">
       <a class="sbtn sbtn-wa" id="wa-link" href="#" target="_blank" onclick="markSent()">
         <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.558 4.116 1.532 5.845L.057 23.486a.5.5 0 0 0 .608.61l5.78-1.512A11.943 11.943 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.886 0-3.655-.493-5.19-1.357l-.371-.214-3.841 1.005 1.024-3.727-.228-.374A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
         WhatsApp
       </a>
-      <a class="sbtn sbtn-em" id="email-link" href="#" onclick="markSent()">
-        <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
-        E-mail
-      </a>
+
     </div>
   </div>
 
@@ -393,8 +396,16 @@ function gerarProtocolo(){
   const yy = String(now.getFullYear()).slice(2);
   const mm = pad(now.getMonth()+1);
   const dd = pad(now.getDate());
-  const rnd = Math.floor(Math.random()*9000)+1000;
-  return `GOV-${yy}${mm}${dd}-${rnd}`;
+  const desc = document.getElementById('descricao').value.trim();
+  const keyword = desc
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .toUpperCase()
+    .replace(/[^A-Z0-9\s]/g,'')
+    .trim()
+    .split(/\s+/)
+    .slice(0,3)
+    .join('-');
+  return `GOV-${dd}${mm}${yy}-${keyword||'DEMANDA'}`;
 }
 
 function selectTipo(el, nome, icon){
@@ -474,8 +485,7 @@ Enviado via Central de Demandas`;
 
   document.getElementById('wa-link').href =
     `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
-  document.getElementById('email-link').href =
-    `mailto:${EMAIL_DESTINO}?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+
 
   goStep(4);
 }
